@@ -61,8 +61,6 @@ static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont,
 static const char *termcmd[]  = { "alacritty", NULL };
 static const char *increaseBrightness[] = { "brightnessctl", "set", "10%+", NULL };
 static const char *decreaseBrightness[] = { "brightnessctl", "set", "10%-", NULL };
-static const char *increaseMasterVolume[] = { "amixer", "set", "Master", "10%+", NULL };
-static const char *decreaseMasterVolume[] = { "amixer", "set", "Master", "10%-", NULL };
 static const char *muteMasterVolume[] = { "amixer", "set", "Master", "off", NULL };
 
 static const Key keys[] = {
@@ -97,8 +95,8 @@ static const Key keys[] = {
     { 0,  XF86XK_MonBrightnessDown, spawn, { .v = decreaseBrightness }},
     { 0,  XF86XK_MonBrightnessUp, spawn, { .v = increaseBrightness }},
     { 0,  XF86XK_AudioMute, spawn, { .v = muteMasterVolume }},
-    { 0,  XF86XK_AudioLowerVolume, spawn, { .v = decreaseMasterVolume}},
-    { 0,  XF86XK_AudioRaiseVolume, spawn, { .v = increaseMasterVolume }},
+    { 0,  XF86XK_AudioLowerVolume, spawn, SHCMD("amixer set Master on; amixer set Master 10%-")},
+    { 0,  XF86XK_AudioRaiseVolume, spawn, SHCMD("amixer set Master on; amixer set Master 10%+")},
 	TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
 	TAGKEYS(                        XK_3,                      2)
