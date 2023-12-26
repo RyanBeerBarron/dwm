@@ -59,9 +59,7 @@ static const Layout layouts[] = {
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
 static const char *termcmd[]  = { "alacritty", NULL };
-static const char *increaseBrightness[] = { "brightnessctl", "set", "10%+", NULL };
-static const char *decreaseBrightness[] = { "brightnessctl", "set", "10%-", NULL };
-static const char *muteMasterVolume[] = { "amixer", "set", "Master", "off", NULL };
+static const char *lockScreen[] = { "slock", NULL };
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
@@ -72,11 +70,12 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
 	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
-	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
-	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
+	{ MODKEY,                       XK_l,      spawn,       {.v = lockScreen} },
+	{ MODKEY,                       XK_equal,  setmfact,       {.f = +0.05} },
+	{ MODKEY,                       XK_minus,  setmfact,       {.f = -0.05} },
 	{ MODKEY,                       XK_Return, zoom,           {0} },
 	{ MODKEY,                       XK_Tab,    view,           {0} },
-	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
+	{ MODKEY,             			XK_c,      killclient,     {0} },
 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
 	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
 	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
@@ -92,11 +91,11 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_Left,   viewprev,       {0} },
 	{ MODKEY|ShiftMask,             XK_Right,  tagtonext,      {0} },
 	{ MODKEY|ShiftMask,             XK_Left,   tagtoprev,      {0} },
-    { 0,  XF86XK_MonBrightnessDown, spawn, { .v = decreaseBrightness }},
-    { 0,  XF86XK_MonBrightnessUp, spawn, { .v = increaseBrightness }},
-    { 0,  XF86XK_AudioMute, spawn, { .v = muteMasterVolume }},
-    { 0,  XF86XK_AudioLowerVolume, spawn, SHCMD("amixer set Master on; amixer set Master 10%-")},
-    { 0,  XF86XK_AudioRaiseVolume, spawn, SHCMD("amixer set Master on; amixer set Master 10%+")},
+    { 0,  XF86XK_MonBrightnessDown, spawn,  SHCMD("brightnessctl set 10%-;  pkill -36 dwmblocks") },
+    { 0,  XF86XK_MonBrightnessUp, spawn, SHCMD("brightnessctl set 10%+;  pkill -36 dwmblocks")},
+    { 0,  XF86XK_AudioMute, spawn, SHCMD( "amixer -D pulse set Master toggle; pkill -35 dwmblocks" )},
+    { 0,  XF86XK_AudioLowerVolume, spawn, SHCMD("amixer -D pulse set Master on; amixer -D pulse set Master 10%-; pkill -35 dwmblocks")},
+    { 0,  XF86XK_AudioRaiseVolume, spawn, SHCMD("amixer -D pulse set Master on; amixer -D pulse set Master 10%+; pkill -35 dwmblocks")},
 	TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
 	TAGKEYS(                        XK_3,                      2)
