@@ -13,6 +13,7 @@ static const unsigned int borderpx  = 1;        /* border pixel of windows */
 static const unsigned int snap      = 16;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
+static const char *barlayout        = "tl|s";
 static const char *fonts[]          = { "IosekvaTerm Nerd Font:size=14" };
 static const char dmenufont[]       = "IosekvaTerm Nerd Font:size=14";
 static unsigned int baralpha        = 0xd0;
@@ -148,4 +149,3 @@ static const Button buttons[] = {
 	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
 	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
 };
-
