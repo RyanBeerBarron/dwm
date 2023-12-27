@@ -65,7 +65,7 @@
 
 /* enums */
 enum { CurNormal, CurResize, CurMove, CurLast }; /* cursor */
-enum { SchemeNorm, SchemeSel }; /* color schemes */
+enum { SchemeNorm, SchemeSel, SchemeStatus, SchemeTagsSel, SchemeTagsNorm, SchemeInfoSel, SchemeInfoNorm }; /* color schemes */
 enum { NetSupported, NetWMName, NetWMState, NetWMCheck,
        NetWMFullscreen, NetActiveWindow, NetWMWindowType,
        NetWMWindowTypeDialog, NetClientList, NetLast }; /* EWMH atoms */
@@ -768,7 +768,7 @@ drawbar(Monitor *m)
 		switch (barlayout[i]) {
 			case 'l':
 				w = TEXTW(m->ltsymbol);
-				drw_setscheme(drw, scheme[SchemeNorm]);
+				drw_setscheme(drw, scheme[SchemeTagsNorm]);
 				if (moveright) {
 					x -= w;
 					drw_text(drw, x, 0, w, bh, lrpad / 2, m->ltsymbol, 0);
@@ -781,12 +781,12 @@ drawbar(Monitor *m)
 				if (moveright)
 					x -= tw;
 				if (m->sel) {
-					drw_setscheme(drw, scheme[m == selmon ? SchemeSel : SchemeNorm]);
+					drw_setscheme(drw, scheme[m == selmon ? SchemeInfoSel : SchemeInfoNorm]);
 					drw_text(drw, x, 0, moveright ? tw : m->ww, bh, lrpad / 2, m->sel->name, 0);
 					if (m->sel->isfloating)
 						drw_rect(drw, x + boxs, boxs, boxw, boxw, m->sel->isfixed, 0);
 				} else {
-					drw_setscheme(drw, scheme[SchemeNorm]);
+					drw_setscheme(drw, scheme[SchemeInfoNorm]);
 					drw_rect(drw, x, 0, tw, bh, 1, 1);
 				}
 				if (!moveright)
@@ -795,7 +795,7 @@ drawbar(Monitor *m)
 
 			case 's':
 				if (m == selmon) { /* status is only drawn on selected monitor */
-					drw_setscheme(drw, scheme[SchemeNorm]);
+					drw_setscheme(drw, scheme[SchemeStatus]);
 					tw = TEXTW(stext) - lrpad + 2; /* 2px right padding */
 					if (moveright) {
 						x -= tw;
@@ -821,7 +821,7 @@ drawbar(Monitor *m)
 				}
 				for (j = 0; j < LENGTH(tags); j++) {
 					w = TEXTW(tags[j]);
-					drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << j ? SchemeSel : SchemeNorm]);
+					drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << j ? SchemeTagsSel : SchemeTagsNorm]);
 					drw_text(drw, x, 0, w, bh, lrpad / 2, tags[j], urg & 1 << j);
 					if (occ & 1 << j)
 						drw_rect(drw, x + boxs, boxs, boxw, boxw,
