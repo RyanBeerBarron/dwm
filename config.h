@@ -1,13 +1,13 @@
 /* See LICENSE file for copyright and license details. */
 
 /* appearance */
-static const unsigned int borderpx  = 2;        /* border pixel of windows */
+static const unsigned int borderpx  = 6;        /* border pixel of windows */
 static const unsigned int snap      = 16;       /* snap pixel */
 static const int swallowfloating    = 0;        /* 1 means swallow floating windows by default */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
-static const char *fonts[]          = { "IosekvaTerm Nerd Font:size=12" };
-static const char dmenufont[]       = "IosekvaTerm Nerd Font:size=12";
+static const char *fonts[]          = { "CaskaydiaCove Nerd Font:size=20" };
+static const char dmenufont[]       = "CaskaydiaCoveNerdFont:size=20";
 static const char col_gray1[]       = "#222222";
 static const char col_gray2[]       = "#444444";
 static const char col_gray3[]       = "#bbbbbb";
@@ -25,7 +25,7 @@ static const char *colors[][3]      = {
 };
 
 /* tagging */
-static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+static const char *tags[] = {"1", "2", "3", "4", "5", "6", "7", "8", "󰈹"};
 
 /* Lockfile */
 static char lockfile[] = "/tmp/dwm.lock";
