@@ -1879,7 +1879,10 @@ tile(Monitor *m)
 void
 togglebar(const Arg *arg)
 {
-	selmon->showbar = !selmon->showbar;
+    if(arg)
+        selmon->showbar = arg->i;
+    else
+	    selmon->showbar = !selmon->showbar;
 	updatebarpos(selmon);
 	XMoveResizeWindow(dpy, selmon->barwin, selmon->wx, selmon->by, selmon->ww, bh);
 	arrange(selmon);
@@ -1904,7 +1907,8 @@ togglefullscr(const Arg *arg)
 {
   if(selmon->sel)
     setfullscreen(selmon->sel, !selmon->sel->isfullscreen);
-    selmon->showbar = 0;
+    Arg arg = { .i = !selmon->sel->isfullscreen };
+    togglebar(&arg);
 }
 
 void
