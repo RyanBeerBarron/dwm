@@ -31,22 +31,26 @@ static const char *tags[] = {"1", "2", "3", "4", "5", "6", "7", "8", "󰈹"};
 static char lockfile[] = "/tmp/dwm.lock";
 
 static const Rule rules[] = {
-	/* xprop(1):
-	* WM_CLASS(STRING) = instance, class
-	* WM_NAME(STRING) = title
-	*/
-	/* class    instance title tags mask isfloating monitor */
-	{"Gimp",       NULL,  NULL,            0,       1,  0,  0,   -1},
-	{"Firefox",    NULL,  NULL,            1 << 8,  0,  0,  -1,  -1},
-	{"Alacritty",  NULL,  NULL,            0,       0,  1,  0,   -1},
-	{NULL,         NULL,  "Event Tester",  0,       0,  0,  1,   -1},  /* xev */
+    /* xprop(1):
+     *  WM_CLASS(STRING) = instance, class
+     *  WM_NAME(STRING) = title
+     */
+	/* class,       instance,  title,           tags mask,  isfloating,  x,    y,    w,   h,   isterminal,  noswallow,  monitor */
+    { "Gimp",       NULL,      NULL,            0,          1,           -1,   -1,   -1,  -1,  0,           0,          -1 },
+    { "firefox",    NULL,      NULL,            1 << 8,     0,           -1,   -1,   -1,  -1,  0,           -1,         1 },
+    { "Alacritty",  NULL,      NULL,            0,          0,           -1,   -1,   -1,  -1,  1,           0,          -1 },
+    { "fm",         NULL,      NULL,            0,          1,           .25,  .25,  .5,  .5,  1,           0,          -1 },
+    { "term",       NULL,      NULL,            0,          1,           .25,  .25,  .5,  .5,  1,           0,          -1 },
+    { NULL,         NULL,      "Event Tester",  0,          0,           -1,   -1,   -1,  -1,  0,           1,          -1 },       /* xev */
 };
 
 /* layout(s) */
-static const float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
-static const int nmaster     = 1;    /* number of clients in master area */
-static const int resizehints = 1;    /* 1 means respect size hints in tiled resizals */
+static const float mfact        = 0.55; /* factor of master area size [0.05..0.95] */
+static const int nmaster        = 1;    /* number of clients in master area */
+static const int resizehints    = 1;    /* 1 means respect size hints in tiled resizals */
 static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
+static const scratchpad fm      = {.class = "fm", .v = (char *[]){"alacritty", "--class", "fm", "-e", "lsf", NULL}};
+static const scratchpad term    = {.class = "term", .v = (char *[]){"alacritty", "--class", "term", NULL}};
 
 static const Layout layouts[] = {
 	/* symbol   arrange function */
@@ -92,6 +96,8 @@ static const Key keys[] = {
 	{MODKEY|ControlMask,  XK_comma,                  cyclelayout,     {.i = -1}},
 	{MODKEY|ControlMask,  XK_period,                 cyclelayout,     {.i = +1}},
 	{MODKEY,              XK_Tab,                    view,            {0}},
+    {MODKEY,              XK_y,                      togglescratch,   {.v = &fm } },
+    {MODKEY,              XK_u,                      togglescratch,   {.v = &term } },
 	{MODKEY,              XK_c,                      killclient,      {0}},
 	{MODKEY|ShiftMask,    XK_q,                      quit,            {0}},
 	{MODKEY,              XK_space,                  setlayout,       {0}},
