@@ -1,0 +1,7 @@
+--style=kr
+--indents=spaces=4
+--align-pointer=name
+--pad-comma
+--pad-header
+--remove-braces
+--break-return-type
