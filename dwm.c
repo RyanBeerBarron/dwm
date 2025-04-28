@@ -287,22 +287,35 @@ static void incrivgaps(const Arg *arg);
 static void togglegaps(const Arg *arg);
 /* Layouts (delete the ones you do not need) */
 static void bstack(Monitor *m);
-static void bstackhoriz(Monitor *m);
 static void centeredmaster(Monitor *m);
-static void centeredfloatingmaster(Monitor *m);
 static void deck(Monitor *m);
-static void dwindle(Monitor *m);
-static void fibonacci(Monitor *m, int s);
-static void grid(Monitor *m);
-static void nrowgrid(Monitor *m);
-static void spiral(Monitor *m);
-static void horizgrid(Monitor *m);
-static void gaplessgrid(Monitor *m);
 static void tile(Monitor *m);
 /* Internals */
 static void getgaps(Monitor *m, int *oh, int *ov, int *ih, int *iv, unsigned int *nc);
 static void getfacts(Monitor *m, int msize, int ssize, float *mf, float *sf, int *mr, int *sr);
 static void setgaps(int oh, int ov, int ih, int iv);
+
+
+/* gaps functions */
+static void defaultgaps(const Arg *arg);
+static void incrgaps(const Arg *arg);
+static void incrigaps(const Arg *arg);
+static void incrogaps(const Arg *arg);
+static void incrohgaps(const Arg *arg);
+static void incrovgaps(const Arg *arg);
+static void incrihgaps(const Arg *arg);
+static void incrivgaps(const Arg *arg);
+static void togglegaps(const Arg *arg);
+/* Layouts (delete the ones you do not need) */
+static void bstack(Monitor *m);
+static void centeredmaster(Monitor *m);
+static void deck(Monitor *m);
+static void tile(Monitor *m);
+/* Internals */
+static void getgaps(Monitor *m, int *oh, int *ov, int *ih, int *iv, unsigned int *nc);
+static void getfacts(Monitor *m, int msize, int ssize, float *mf, float *sf, int *mr, int *sr);
+static void setgaps(int oh, int ov, int ih, int iv);
+
 
 
 /* variables */
@@ -341,11 +354,12 @@ static Window root, wmcheckwin;
 
 static xcb_connection_t *xcon;
 
+
 /* configuration, allows nested code to access above variables */
 #include "config.h"
-
 struct Pertag {
     unsigned int curtag, prevtag; /* current and previous tag */
+    unsigned int enablegaps[LENGTH(tags)];
     int nmasters[LENGTH(tags) + 1]; /* number of windows in master area */
     float mfacts[LENGTH(tags) + 1]; /* mfacts per tag */
     unsigned int sellts[LENGTH(tags) + 1]; /* selected layouts */
@@ -1272,25 +1286,25 @@ manage(Window w, XWindowAttributes *wa)
     updatewindowtype(c);
     updatesizehints(c);
     updatewmhints(c);
- 	{
- 		int format;
- 		unsigned long *data, n, extra;
- 		Monitor *m;
- 		Atom atom;
- 		if (XGetWindowProperty(dpy, c->win, netatom[NetClientInfo], 0L, 2L, False, XA_CARDINAL,
- 				&atom, &format, &n, &extra, (unsigned char **)&data) == Success && n == 2) {
- 			c->tags = *data;
- 			for (m = mons; m; m = m->next) {
- 				if (m->num == *(data+1)) {
- 					c->mon = m;
- 					break;
- 				}
- 			}
- 		}
- 		if (n > 0)
- 			XFree(data);
- 	}
- 	setclienttagprop(c);
+    {
+        int format;
+        unsigned long *data, n, extra;
+        Monitor *m;
+        Atom atom;
+        if (XGetWindowProperty(dpy, c->win, netatom[NetClientInfo], 0L, 2L, False, XA_CARDINAL,
+                               &atom, &format, &n, &extra, (unsigned char **)&data) == Success && n == 2) {
+            c->tags = *data;
+            for (m = mons; m; m = m->next) {
+                if (m->num == *(data+1)) {
+                    c->mon = m;
+                    break;
+                }
+            }
+        }
+        if (n > 0)
+            XFree(data);
+    }
+    setclienttagprop(c);
 
     XSelectInput(dpy, w, EnterWindowMask|FocusChangeMask|PropertyChangeMask|StructureNotifyMask);
     grabbuttons(c, 0);
@@ -1697,7 +1711,7 @@ sendmon(Client *c, Monitor *m)
     c->tags = m->tagset[m->seltags]; /* assign tags of target monitor */
     attach(c);
     attachstack(c);
-	setclienttagprop(c);
+    setclienttagprop(c);
     focus(NULL);
     arrange(NULL);
 }
@@ -1867,7 +1881,7 @@ setup(void)
     netatom[NetWMWindowType] = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE", False);
     netatom[NetWMWindowTypeDialog] = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE_DIALOG", False);
     netatom[NetClientList] = XInternAtom(dpy, "_NET_CLIENT_LIST", False);
- 	netatom[NetClientInfo] = XInternAtom(dpy, "_NET_CLIENT_INFO", False);
+    netatom[NetClientInfo] = XInternAtom(dpy, "_NET_CLIENT_INFO", False);
     /* init cursors */
     cursor[CurNormal] = drw_cur_create(drw, XC_left_ptr);
     cursor[CurResize] = drw_cur_create(drw, XC_sizing);
@@ -1939,8 +1953,6 @@ spawn(const Arg *arg)
 {
     struct sigaction sa;
 
-    if (arg->v == dmenucmd)
-        dmenumon[0] = '0' + selmon->num;
     if (fork() == 0) {
         if (dpy)
             close(ConnectionNumber(dpy));
@@ -1959,19 +1971,19 @@ spawn(const Arg *arg)
 void
 setclienttagprop(Client *c)
 {
-	long data[] = { (long) c->tags, (long) c->mon->num };
-	XChangeProperty(dpy, c->win, netatom[NetClientInfo], XA_CARDINAL, 32,
-			PropModeReplace, (unsigned char *) data, 2);
+    long data[] = { (long) c->tags, (long) c->mon->num };
+    XChangeProperty(dpy, c->win, netatom[NetClientInfo], XA_CARDINAL, 32,
+                    PropModeReplace, (unsigned char *) data, 2);
 }
 
 void
 tag(const Arg *arg)
 {
-	Client *c;
+    Client *c;
     if (selmon->sel && arg->ui & TAGMASK) {
-		c = selmon->sel;
+        c = selmon->sel;
         selmon->sel->tags = arg->ui & TAGMASK;
-		setclienttagprop(c);
+        setclienttagprop(c);
         focus(NULL);
         arrange(selmon);
     }
@@ -2066,7 +2078,7 @@ toggletag(const Arg *arg)
     newtags = selmon->sel->tags ^ (arg->ui & TAGMASK);
     if (newtags) {
         selmon->sel->tags = newtags;
-		setclienttagprop(selmon->sel);
+        setclienttagprop(selmon->sel);
         focus(NULL);
         arrange(selmon);
     }
@@ -2741,3 +2753,6 @@ main(int argc, char *argv[])
     XCloseDisplay(dpy);
     return EXIT_SUCCESS;
 }
+
+
+#include "vanitygaps.c"

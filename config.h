@@ -1,13 +1,17 @@
 /* See LICENSE file for copyright and license details. */
 
 /* appearance */
-static const unsigned int borderpx  = 10;        /* border pixel of windows */
+
+#if !PERTAG_PATCH
+static int enablegaps = 0;
+#endif
+static const unsigned int borderpx  = 6;        /* border pixel of windows */
 static const unsigned int snap      = 16;       /* snap pixel */
 static const int swallowfloating    = 0;        /* 1 means swallow floating windows by default */
-static const unsigned int gappih    = 20;       /* horiz inner gap between windows */
-static const unsigned int gappiv    = 10;       /* vert inner gap between windows */
-static const unsigned int gappoh    = 10;       /* horiz outer gap between windows and screen edge */
-static const unsigned int gappov    = 30;       /* vert outer gap between windows and screen edge */
+static const unsigned int gappih    = 0;       /* horiz inner gap between windows */
+static const unsigned int gappiv    = 0;       /* vert inner gap between windows */
+static const unsigned int gappoh    = 0;       /* horiz outer gap between windows and screen edge */
+static const unsigned int gappov    = 0;       /* vert outer gap between windows and screen edge */
 static       int smartgaps          = 0;        /* 1 means no outer gap when there is only one window */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
@@ -41,12 +45,12 @@ static const Rule rules[] = {
      *  WM_NAME(STRING) = title
      */
     /* class,       instance,  title,           tags mask,  isfloating,  x,    y,    w,   h,   isterminal,  noswallow,  monitor */
-    {"Gimp",       NULL,      NULL,            0,          1,           -1,   -1,   -1,  -1,  0,           0,          -1},
-    {"firefox",    NULL,      NULL,            1 << 8,     0,           -1,   -1,   -1,  -1,  0,           -1,         1},
-    {"Alacritty",  NULL,      NULL,            0,          0,           -1,   -1,   -1,  -1,  1,           0,          -1},
-    {"fm",         NULL,      NULL,            0,          1,           .25,  .25,  .5,  .5,  1,           0,          -1},
-    {"term",       NULL,      NULL,            0,          1,           .25,  .25,  .5,  .5,  1,           0,          -1},
-    {NULL,         NULL,      "Event Tester",  0,          0,           -1,   -1,   -1,  -1,  0,           1,          -1},       /* xev */
+    {"Gimp",		NULL,      NULL,            0,          1,           -1,   -1,   -1,  -1,  0,           0,          -1},
+    {"firefox",		NULL,      NULL,            1 << 8,     0,           -1,   -1,   -1,  -1,  0,           -1,         1},
+    {"Alacritty",	NULL,      NULL,            0,          0,           -1,   -1,   -1,  -1,  1,           0,          -1},
+    {"filemanager",	NULL,      NULL,            0,          1,           .25,  .25,  .5,  .5,  1,           0,          -1},
+    {"term",		NULL,      NULL,            0,          1,           .25,  .25,  .5,  .5,  1,           0,          -1},
+    {NULL,			NULL,      "Event Tester",  0,          0,           -1,   -1,   -1,  -1,  0,           1,          -1},       /* xev */
 };
 
 /* layout(s) */
@@ -54,27 +58,24 @@ static const float mfact        = 0.55; /* factor of master area size [0.05..0.9
 static const int nmaster        = 1;    /* number of clients in master area */
 static const int resizehints    = 0;    /* 1 means respect size hints in tiled resizals */
 static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
-static const scratchpad fm      = {.class = "fm", .v = (char *[]){"alacritty", "--class", "fm", "-e", "lsf", NULL}};
-static const scratchpad term    = {.class = "term", .v = (char *[]){"alacritty", "--class", "term", NULL}};
+static const scratchpad filemanager      = {.class = "filemanager", .v = (char *[]) {
+    "alacritty", "--class", "filemanager", "-e", "lf", NULL
+}
+                                           };
+static const scratchpad term    = {.class = "term", .v = (char *[]) {
+    "alacritty", "--class", "term", NULL
+}
+                                  };
 
 #define FORCE_VSPLIT 1  /* nrowgrid layout: force two clients to always split vertically */
-#include "vanitygaps.c"
 
 static const Layout layouts[] = {
     /* symbol   arrange function */
     {"[]=",     tile}, /* first entry is default */
     {"[M]",     monocle},
-    {"[@]",     spiral},
-    {"[\\]",    dwindle},
-    {"H[]",     deck},
-    {"TTT",     bstack},
-    {"===",     bstackhoriz},
-    {"HHH",     grid},
-    {"###",     nrowgrid},
-    {"---",     horizgrid},
-    {":::",     gaplessgrid},
     {"|M|",     centeredmaster},
-    {">M>",     centeredfloatingmaster},
+    {"TTT",     bstack},
+    {"H[]",     deck},
     {"><>",     NULL},    /* no layout function means floating behavior */
     {NULL,      NULL},
 };
@@ -91,15 +92,19 @@ static const Layout layouts[] = {
 #define SHCMD(cmd) {.v = (const char *[]) {"/bin/sh", "-c", cmd, NULL}}
 
 /* commands */
-static char dmenumon[2]            = "0"; /* component of dmenucmd, manipulated in spawn() */
-static const char *dmenucmd[]      = {"dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL};
+static const char *roficmd[]      = {"rofi", "-show", "drun", NULL};
+static const char *rofirun[]      = {"rofi", "-show", "run", NULL};
+static const char *rofiwindow[]      = {"rofi", "-show", "window", NULL};
 static const char *termcmd[]       = {"alacritty", NULL};
-static const char *lockScreen[]    = {"slock", NULL};
+static const char *lockScreen[]    = {"loginctl", "lock-session", NULL};
 static const char *nextWallpaper[] = {"setbackground", "next", NULL};
 static const char *prevWallpaper[] = {"setbackground", "prev", NULL};
 static const Key keys[] = {
     /*  modifier,                   key,                       function,        argument */
-    {MODKEY,                        XK_p,                      spawn,           {.v = dmenucmd}},
+    {MODKEY,                        XK_p,                      spawn,           {.v = roficmd}},
+    {MODKEY,                        XK_r,                      spawn,           {.v = rofirun}},
+    {MODKEY,                        XK_Escape,                 spawn,           SHCMD("shutdown now")},
+    {MODKEY,                        XK_w,                      spawn,           {.v = rofiwindow}},
     {MODKEY|ShiftMask,              XK_Return,                 spawn,           SHCMD("cd $(xcwd); alacritty;")},
     {MODKEY,                        XK_b,                      togglebar,       {.i = -1}},                                                                                    // -1 means invert current value
     {MODKEY,                        XK_j,                      focusstack,      {.i = +1}},
@@ -134,7 +139,7 @@ static const Key keys[] = {
     {MODKEY|ControlMask,            XK_comma,                  cyclelayout,     {.i = -1}},
     {MODKEY|ControlMask,            XK_period,                 cyclelayout,     {.i = +1}},
     {MODKEY,                        XK_Tab,                    view,            {0}},
-    {MODKEY,                        XK_y,                      togglescratch,   {.v = &fm}},
+    {MODKEY,                        XK_y,                      togglescratch,   {.v = &filemanager}},
     {MODKEY,                        XK_u,                      togglescratch,   {.v = &term}},
     {MODKEY,                        XK_c,                      killclient,      {0}},
     {MODKEY|ShiftMask,              XK_q,                      quit,            {0}},
@@ -171,8 +176,8 @@ static const Key keys[] = {
 /* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
 static const Button buttons[] = {
     /* click,        event mask,  button,   function,        argument */
-    {ClkLtSymbol,    0,           Button1,  setlayout,       {0}},
-    {ClkLtSymbol,    0,           Button3,  setlayout,       {.v = &layouts[2]}},
+    {ClkLtSymbol,    0,           Button1,  cyclelayout,       {.i = +1}},
+    {ClkLtSymbol,    0,           Button3,  cyclelayout,       {.i = -1}},
     {ClkWinTitle,    0,           Button2,  zoom,            {0}},
     {ClkStatusText,  0,           Button2,  spawn,           {.v = termcmd}},
     {ClkClientWin,   MODKEY,      Button1,  movemouse,       {0}},
@@ -183,4 +188,3 @@ static const Button buttons[] = {
     {ClkTagBar,      MODKEY,      Button1,  tag,             {0}},
     {ClkTagBar,      MODKEY,      Button3,  toggletag,       {0}},
 };
-
