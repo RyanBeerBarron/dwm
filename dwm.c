@@ -93,6 +93,7 @@ typedef struct {
 
 typedef struct {
     const char *class;
+    const char *instance;
     const char *title;
     const void *v;
 } scratchpad;
@@ -2128,11 +2129,18 @@ togglescratch(const Arg *arg)
     Monitor *m;
     for (m = mons; m; m = m->next) {
         for (c = m->clients; c; c = c->next) {
-            const char *class;
+            const char *class, *instance;
             XClassHint ch = { NULL, NULL };
             XGetClassHint(dpy, c->win, &ch);
             class = ch.res_class ? ch.res_class : broken;
-            found = (((char *)((scratchpad *)arg->v)->class != NULL) && strcmp(class, (char *)((scratchpad *)arg->v)->class) == 0) || (((char *)((scratchpad *)arg->v)->title != NULL) && strcmp(c->name, (char *)((scratchpad *)arg->v)->title) == 0);
+            instance = ch.res_name ? ch.res_name : broken;
+            char *scratchpad_class = (char *)((scratchpad *)arg->v)->class;
+            char *scratchpad_instance = (char *)((scratchpad *)arg->v)->instance;
+            char *scratchpad_title = (char *)((scratchpad *)arg->v)->title;
+            // int same_class = scratchpad_class != NULL && (strcmp(class, scratchpad_class) == 0);
+            int same_instance = scratchpad_instance != NULL && (strcmp(instance, scratchpad_instance) == 0);
+            int same_title = scratchpad_title != NULL && (strcmp(c->name, scratchpad_title) == 0);
+            found = same_instance || same_title;
             if (found)
                 break;
         }

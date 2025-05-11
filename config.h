@@ -15,7 +15,7 @@ static const unsigned int gappov    = 0;       /* vert outer gap between windows
 static       int smartgaps          = 0;        /* 1 means no outer gap when there is only one window */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
-static const char *fonts[]          = { "CaskaydiaCove Nerd Font:size=20" };
+static const char *fonts[]          = { "IosevkaTerm Nerd Font:size=16" };
 static const char dmenufont[]       = "CaskaydiaCoveNerdFont:size=20";
 static const char col_gray1[]       = "#222222";
 static const char col_gray2[]       = "#444444";
@@ -48,9 +48,9 @@ static const Rule rules[] = {
     {"Gimp",		NULL,      NULL,            0,          1,           -1,   -1,   -1,  -1,  0,           0,          -1},
     {"firefox",		NULL,      NULL,            1 << 8,     0,           -1,   -1,   -1,  -1,  0,           -1,         1},
     {"Alacritty",	NULL,      NULL,            0,          0,           -1,   -1,   -1,  -1,  1,           0,          -1},
-    {"filemanager",	NULL,      NULL,            0,          1,           .25,  .25,  .5,  .5,  1,           0,          -1},
-    {"term",		NULL,      NULL,            0,          1,           .25,  .25,  .5,  .5,  1,           0,          -1},
-    {NULL,			NULL,      "Event Tester",  0,          0,           -1,   -1,   -1,  -1,  0,           1,          -1},       /* xev */
+    {"scratchpad",	NULL,      NULL,            0,          1,           .25,  .25,  .6,  .6,  1,           0,          -1},
+    {"fzf",	        NULL,      NULL,            0,          1,           .25,  .25,  .6,  .6,  1,           0,          -1},
+    {NULL,		NULL,      "Event Tester",  0,          0,           -1,   -1,   -1,  -1,  0,           1,          -1},       /* xev */
 };
 
 /* layout(s) */
@@ -58,14 +58,22 @@ static const float mfact        = 0.55; /* factor of master area size [0.05..0.9
 static const int nmaster        = 1;    /* number of clients in master area */
 static const int resizehints    = 0;    /* 1 means respect size hints in tiled resizals */
 static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
-static const scratchpad filemanager      = {.class = "filemanager", .v = (char *[]) {
-    "alacritty", "--class", "filemanager", "-e", "lf", NULL
-}
-                                           };
-static const scratchpad term    = {.class = "term", .v = (char *[]) {
-    "alacritty", "--class", "term", NULL
-}
-                                  };
+static const scratchpad filemanager = {
+    .instance = "filemanager", .class = "scratchpad",
+    .v = (char *[]) {"alacritty", "--class", "scratchpad,filemanager", "-T", "filemanager", "-e", "lf", NULL}
+};
+static const scratchpad python      = {
+    .instance = "python", .class = "scratchpad",
+    .v = (char *[]) {"alacritty", "--class", "scratchpad,python", "-T", "python", "-e", "python3", NULL}
+};
+static const scratchpad notes      = {
+    .instance = "notes", .class = "scratchpad",
+    .v = (char *[]) {"alacritty", "--class", "scratchpad,notes", "-T", "notes", "-e", "notes", NULL}
+};
+static const scratchpad term        = {
+    .instance = "term", .class = "scratchpad",
+    .v = (char *[]) {"alacritty", "--class", "scratchpad,term", "-T", "scratchpad shell", NULL}
+};
 
 #define FORCE_VSPLIT 1  /* nrowgrid layout: force two clients to always split vertically */
 
@@ -139,8 +147,10 @@ static const Key keys[] = {
     {MODKEY|ControlMask,            XK_comma,                  cyclelayout,     {.i = -1}},
     {MODKEY|ControlMask,            XK_period,                 cyclelayout,     {.i = +1}},
     {MODKEY,                        XK_Tab,                    view,            {0}},
+    {MODKEY,                        XK_u,                      togglescratch,   {.v = &notes}},
+    {MODKEY,                        XK_i,                      togglescratch,   {.v = &python}},
     {MODKEY,                        XK_y,                      togglescratch,   {.v = &filemanager}},
-    {MODKEY,                        XK_u,                      togglescratch,   {.v = &term}},
+    {MODKEY,                        XK_s,                      togglescratch,   {.v = &term}},
     {MODKEY,                        XK_c,                      killclient,      {0}},
     {MODKEY|ShiftMask,              XK_q,                      quit,            {0}},
     {MODKEY,                        XK_space,                  setlayout,       {0}},
